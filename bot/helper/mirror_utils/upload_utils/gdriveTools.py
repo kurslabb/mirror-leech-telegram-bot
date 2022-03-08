@@ -953,3 +953,75 @@ class GoogleDriveHelper:
         elif self.is_uploading:
             LOGGER.info(f"Cancelling Upload: {self.name}")
             self.__listener.onUploadError('your upload has been stopped and uploaded data has been deleted!')
+ 
+    def drive_list_inline(self, fileName, stopDup=False, noMulti=False, isRecursive=True, itemType=""):
+        file_title = []
+        desc = []
+        drive_url = []
+        index_url = []
+        view_link = [] 
+        msg = ""
+        fileName = self.__escapes(str(fileName))
+        contents_count = 0
+        Title = False
+        if len(DRIVES_IDS) > 1:
+            token_service = self.__alt_authorize()
+            if token_service is not None:
+                self.__service = token_service
+        for index, parent_id in enumerate(DRIVES_IDS):
+            if isRecursive and len(parent_id) > 23:
+                isRecur = False
+            else:
+                isRecur = isRecursive
+            response = self.__drive_query(parent_id, fileName, stopDup, isRecur, itemType)
+            if not response["files"] and noMulti:
+                break
+            elif not response["files"]:
+                continue
+            if not Title:
+                Title = True
+
+            for file in response.get('files', []):
+                mime_type = file.get('mimeType')
+
+                if mime_type == "application/vnd.google-apps.folder":
+                    file_title.append(file.get('name'))
+                    desc.append(f"Type : Folder")
+                    d_url = f"https://drive.google.com/drive/folders/{file.get('id')}"
+                    d_url = short_url(d_url)
+                    drive_url.append(d_url)
+                    if INDEX_URLS[index] is not None:
+                        if isRecur:
+                            url_path = "/".join([rquote(n, safe='') for n in self.__get_recursive_list(file, parent_id)])
+                        else:
+                            url_path = rquote(f'{file.get("name")}')
+                        i_url = f'{INDEX_URLS[index]}/{url_path}/'
+                        i_url = short_url(i_url)
+                        index_url.append(i_url)
+                        view_link.append(i_url)
+                else:
+                    d_url = f"https://drive.google.com/uc?id={file.get('id')}&export=download"
+                    file_title.append(file.get('name'))
+                    desc.append(f"Size : {get_readable_file_size(int(file.get('size', 0)))}")
+                    d_url = short_url(d_url)
+                    drive_url.append(d_url)
+                    if INDEX_URLS[index] is not None:
+                        if isRecur:
+                            url_path = "/".join(
+                                rquote(n, safe='')
+                                for n in self.__get_recursive_list(file, parent_id)
+                            )
+
+                        else:
+                            url_path = rquote(f'{file.get("name")}')
+                        i_url = f'{INDEX_URLS[index]}/{url_path}'
+                        i_url = short_url(i_url)
+                        index_url.append(i_url)
+                        v_link = f'{INDEX_URLS[index]}/{url_path}?a=view'
+                        v_link = short_url(v_link)
+                        view_link.append(v_link)
+                contents_count += 1
+            if noMulti:
+                break
+        time.sleep(0.5)
+        return file_title, desc, drive_url, index_url, view_link

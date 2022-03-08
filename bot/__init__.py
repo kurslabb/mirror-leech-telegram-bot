@@ -153,7 +153,7 @@ except KeyError as e:
     exit(1)
 
 LOGGER.info("Generating BOT_STRING_SESSION")
-app = Client('pyrogram', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN, no_updates=True)
+app = Client('pyrogram', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN)
 
 try:
     USER_STRING_SESSION = getConfig('USER_STRING_SESSION')
