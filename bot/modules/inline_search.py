@@ -47,14 +47,18 @@ async def inline_search(_, event: InlineQuery):
                                 message_text=f"Title : {title}\n{desc[file_title.index(title)]}",
                                 disable_web_page_preview=True
                             ),
-                            reply_markup=InlineKeyboardMarkup([
-                                [InlineKeyboardButton("View Link", url=view_link[file_title.index(title)])],
-                                [InlineKeyboardButton("Drive Link", url=drive_url[file_title.index(title)])],
-                                [InlineKeyboardButton("Index Link", url=index_url[file_title.index(title)])],
-                                [InlineKeyboardButton("Search Again", switch_inline_query_current_chat="")],
-                            ])
-                        )
+                        reply_markup=InlineKeyboardMarkup([
+                            [
+                                InlineKeyboardButton("View Link", url=view_link[file_title.index(title)]),
+                                InlineKeyboardButton("Drive Link", url=drive_url[file_title.index(title)])
+                            ],
+                            [
+                               InlineKeyboardButton("Index Link", url=index_url[file_title.index(title)]),
+                               InlineKeyboardButton("Search Again", switch_inline_query_current_chat="")
+                            ],
+                        ])
                     )
+                )
         else:
             answers.append(
                 InlineQueryResultArticle(
